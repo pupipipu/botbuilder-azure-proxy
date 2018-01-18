@@ -1,0 +1,42 @@
+{
+  "name": "botbuilder-azure-proxy",
+  "version": "0.1.0",
+  "description": "Bot Builder SDK Azure Extensions with proxy options",
+  "keywords": [
+    "botbuilder proxy",
+    "botbuilder",
+    "bots",
+    "chatbots",
+    "azure"
+  ],
+  "author": "Microsoft Corp. -- modified by pupipipu",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/pupipipu/BotBuilder-Azure-proxy/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pupipipu/BotBuilder-Azure-proxy.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc"
+  },
+  "main": "./lib/botbuilder-azure.js",
+  "typings": "./lib/botbuilder-azure.d.ts",
+  "dependencies": {
+    "async": "^2.1.2",
+    "azure-storage": "^2.6.0",
+    "botbuilder-proxy": "^0.1.8",
+    "documentdb": "^1.13.0",
+    "promise": "^7.1.1",
+    "tedious": "^2.0.0"
+  },
+  "devDependencies": {
+    "@types/async": "^2.0.44",
+    "@types/documentdb": "0.0.33",
+    "@types/node": "^6.0.90",
+    "@types/promise": "^7.1.30",
+    "@types/tedious": "^1.8.31"
+  }
+}

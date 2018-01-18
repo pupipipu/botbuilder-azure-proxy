@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+        "declaration": true,
+        "importHelpers": true,
+        "jsx": "react",
+        "lib": [
+            "dom",
+            "es2017"
+        ],
+        "module": "commonjs",
+        "noImplicitAny": true,
+        "outDir": "./lib/",
+        "target": "es5",
+        "sourceMap": true
+    },
+    "include": [
+        "src/*",
+    ]
+}
