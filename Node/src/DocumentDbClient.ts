@@ -38,11 +38,13 @@ import * as async from 'async';
 import Consts = require('./Consts');
 import { DocumentClient, QueryError, DatabaseMeta, CollectionMeta, RetrievedDocument, QueryIterator, UniqueId, RequestOptions, RequestCallback, NewDocument, Collection, SqlQuerySpec, FeedOptions } from 'documentdb';
 
+//add optional proxy
 export interface IDocumentDbOptions {
     host: string;
     masterKey: string;
     database: string;
     collection: string;
+    proxy?:string;
 }
 
 export interface IDocDbEntity extends IBotEntity {
@@ -54,12 +56,27 @@ export class DocumentDbClient implements IStorageClient {
     private client: IDocumentClient;
     private database: DatabaseMeta;
     private collection: CollectionMeta;
+    private proxy:string;
 
-    constructor(private options: IDocumentDbOptions) { }
+    constructor(private options: IDocumentDbOptions) {
+      if(options.proxy){
+        this.proxy = options.proxy;
+      }
+    }
 
     /** Initializes the DocumentDb client */
     public initialize(callback: (error: Error) => void): void {
-        let client: any = new DocumentClient(this.options.host, { masterKey: this.options.masterKey });
+
+        var connPolicy = null;
+
+        //add proxy
+        if(this.proxy){
+          connPolicy = {
+              'ProxyUrl':this.proxy
+          };
+        }
+
+        let client: any = new DocumentClient(this.options.host, { masterKey: this.options.masterKey }, connPolicy);
 
         // DocumentDb public typings are not correct, so we cast to this interface to have the correct typings
         this.client = <IDocumentClient>client;

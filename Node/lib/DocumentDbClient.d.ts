@@ -5,6 +5,7 @@ export interface IDocumentDbOptions {
     masterKey: string;
     database: string;
     collection: string;
+    proxy?: string;
 }
 export interface IDocDbEntity extends IBotEntity {
     id: string;
@@ -14,6 +15,7 @@ export declare class DocumentDbClient implements IStorageClient {
     private client;
     private database;
     private collection;
+    private proxy;
     constructor(options: IDocumentDbOptions);
     /** Initializes the DocumentDb client */
     initialize(callback: (error: Error) => void): void;

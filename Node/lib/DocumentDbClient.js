@@ -37,11 +37,21 @@ var documentdb_1 = require("documentdb");
 var DocumentDbClient = /** @class */ (function () {
     function DocumentDbClient(options) {
         this.options = options;
+        if (options.proxy) {
+            this.proxy = options.proxy;
+        }
     }
     /** Initializes the DocumentDb client */
     DocumentDbClient.prototype.initialize = function (callback) {
         var _this = this;
-        var client = new documentdb_1.DocumentClient(this.options.host, { masterKey: this.options.masterKey });
+        var connPolicy = null;
+        //add proxy
+        if (this.proxy) {
+            connPolicy = {
+                'ProxyUrl': this.proxy
+            };
+        }
+        var client = new documentdb_1.DocumentClient(this.options.host, { masterKey: this.options.masterKey }, connPolicy);
         // DocumentDb public typings are not correct, so we cast to this interface to have the correct typings
         this.client = client;
         this.getOrCreateDatabase(function (error, database) {
