@@ -37,7 +37,7 @@ import * as builder from 'botbuilder-proxy';
 import * as async from 'async';
 import Consts = require('./Consts');
 
-var azure = require('azure-storage');
+var azure = require('azure-storage-proxy');
 
 export interface IBotTableEntity extends IBotEntity {
     partitionKey: string;

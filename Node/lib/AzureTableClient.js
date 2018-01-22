@@ -33,7 +33,7 @@
 //
 Object.defineProperty(exports, "__esModule", { value: true });
 var Consts = require("./Consts");
-var azure = require('azure-storage');
+var azure = require('azure-storage-proxy');
 var AzureTableClient = /** @class */ (function () {
     function AzureTableClient(tableName, accountName, accountKey, proxy) {
         // Development storage is used if no accountName and key are provided

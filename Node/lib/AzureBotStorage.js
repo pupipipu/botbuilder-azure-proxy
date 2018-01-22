@@ -36,7 +36,7 @@ var async = require("async");
 var Promise = require("promise");
 var Consts = require("./Consts");
 var zlib = require("zlib");
-var azure = require('azure-storage');
+var azure = require('azure-storage-proxy');
 var AzureBotStorage = /** @class */ (function () {
     function AzureBotStorage(options, storageClient) {
         this.options = options;

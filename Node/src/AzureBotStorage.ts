@@ -40,7 +40,7 @@ import zlib = require('zlib');
 import { IStorageClient, IHttpResponse } from './IStorageClient';
 import { AzureTableClient } from './AzureTableClient';
 
-var azure = require('azure-storage');
+var azure = require('azure-storage-proxy');
 
 export interface IAzureBotStorageOptions {
     /** If true the data will be gzipped prior to writing to storage. */

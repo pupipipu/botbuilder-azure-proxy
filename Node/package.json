@@ -26,7 +26,7 @@
   "typings": "./lib/botbuilder-azure.d.ts",
   "dependencies": {
     "async": "^2.1.2",
-    "azure-storage": "^2.6.0",
+    "azure-storage-proxy": "^0.1.0",
     "botbuilder-proxy": "^0.1.8",
     "documentdb": "^1.13.0",
     "promise": "^7.1.1",
