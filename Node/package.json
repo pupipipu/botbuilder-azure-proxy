@@ -1,6 +1,6 @@
 {
   "name": "botbuilder-azure-proxy",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Modified Bot Builder SDK Azure Extensions with proxy options",
   "keywords": [
     "botbuilder proxy",
@@ -27,7 +27,7 @@
   "dependencies": {
     "async": "^2.1.2",
     "azure-storage-proxy": "^0.1.0",
-    "botbuilder-proxy": "^0.1.8",
+    "botbuilder-proxy": "^0.1.9",
     "documentdb": "^1.13.0",
     "promise": "^7.1.1",
     "tedious": "^2.0.0"
