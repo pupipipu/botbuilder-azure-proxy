@@ -7,9 +7,10 @@ export interface IAzureBotStorageOptions {
 export declare class AzureBotStorage implements builder.IBotStorage {
     private options;
     private storageClient;
+    private logFunc;
     private initializeTableClientPromise;
     private storageClientInitialized;
-    constructor(options: IAzureBotStorageOptions, storageClient?: IStorageClient);
+    constructor(options: IAzureBotStorageOptions, storageClient?: IStorageClient, logFunc?: (logObject: any) => void);
     client(storageClient: IStorageClient): this;
     /** Reads in data from storage. */
     getData(context: builder.IBotStorageContext, callback: (err: Error, data: builder.IBotStorageData) => void): void;

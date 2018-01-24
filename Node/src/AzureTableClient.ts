@@ -54,9 +54,9 @@ export interface IProxyService{
 export class AzureTableClient implements IStorageClient {
 
     private readonly connectionString: string;
-    private readonly accountName: string;
+    public readonly accountName: string;
     private readonly accountKey: string;
-    private readonly tableName: string;
+    public readonly tableName: string;
     private readonly proxy:IProxyService;
     private readonly useDevelopmentStorage: boolean;
 

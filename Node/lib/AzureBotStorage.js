@@ -38,9 +38,10 @@ var Consts = require("./Consts");
 var zlib = require("zlib");
 var azure = require('azure-storage-proxy');
 var AzureBotStorage = /** @class */ (function () {
-    function AzureBotStorage(options, storageClient) {
+    function AzureBotStorage(options, storageClient, logFunc) {
         this.options = options;
         this.storageClient = storageClient;
+        this.logFunc = logFunc;
     }
     AzureBotStorage.prototype.client = function (storageClient) {
         this.storageClient = storageClient;
@@ -48,8 +49,9 @@ var AzureBotStorage = /** @class */ (function () {
     };
     /** Reads in data from storage. */
     AzureBotStorage.prototype.getData = function (context, callback) {
-        var _this = this;
         // We initialize on every call, but only block on the first call. The reason for this is that we can't run asynchronous initialization in the class ctor
+        var _this = this;
+        var _self = this;
         this.initializeStorageClient().done(function () {
             // Build list of read commands
             var list = [];
@@ -82,6 +84,7 @@ var AzureBotStorage = /** @class */ (function () {
             // Execute reads in parallel
             var data = {};
             async.each(list, function (entry, cb) {
+                var logStart = new Date().toISOString();
                 _this.storageClient.retrieve(entry.partitionKey, entry.rowKey, function (error, entity, response) {
                     if (!error) {
                         if (entity) {
@@ -123,6 +126,16 @@ var AzureBotStorage = /** @class */ (function () {
                     else {
                         cb(error);
                     }
+                    //logging functions
+                    if (_self.logFunc) {
+                        _self.logFunc({
+                            operationName: 'StateAPIGetData',
+                            requestTime: logStart,
+                            responseTime: new Date().toISOString(),
+                            apiEndpoint: _self.storageClient.accountName + "/" + _self.storageClient.tableName,
+                            errorMessage: error ? error.toString() : ''
+                        });
+                    }
                 });
             }, function (err) {
                 if (!err) {
@@ -138,6 +151,7 @@ var AzureBotStorage = /** @class */ (function () {
     /** Writes out data to storage. */
     AzureBotStorage.prototype.saveData = function (context, data, callback) {
         var _this = this;
+        var _self = this;
         // We initialize on every call, but only block on the first call. The reason for this is that we can't run asynchronous initialization in the class ctor
         var promise = this.initializeStorageClient();
         promise.done(function () {
@@ -168,6 +182,7 @@ var AzureBotStorage = /** @class */ (function () {
                 }
                 // Execute writes in parallel
                 async.each(list, function (entry, errorCallback) {
+                    var logStart = new Date().toISOString();
                     if (_this.options.gzipData) {
                         zlib.gzip(entry.hash, function (err, result) {
                             if (!err && result.length > Consts.maxDataLength) {
@@ -178,6 +193,16 @@ var AzureBotStorage = /** @class */ (function () {
                                 //Insert gzipped entry
                                 _this.storageClient.insertOrReplace(entry.partitionKey, entry.rowKey, result.toString('base64'), true, function (error, eTag, response) {
                                     errorCallback(error);
+                                    //logging functions
+                                    if (_self.logFunc) {
+                                        _self.logFunc({
+                                            operationName: 'StateAPISaveDataGZip',
+                                            requestTime: logStart,
+                                            responseTime: new Date().toISOString(),
+                                            apiEndpoint: _self.storageClient.accountName + "/" + _self.storageClient.tableName,
+                                            errorMessage: error ? error.toString() : ''
+                                        });
+                                    }
                                 });
                             }
                             else {
@@ -188,6 +213,16 @@ var AzureBotStorage = /** @class */ (function () {
                     else if (entry.hash.length < Consts.maxDataLength) {
                         _this.storageClient.insertOrReplace(entry.partitionKey, entry.rowKey, entry.botData, false, function (error, eTag, response) {
                             errorCallback(error);
+                            //logging functions
+                            if (_self.logFunc) {
+                                _self.logFunc({
+                                    operationName: 'StateAPISaveData',
+                                    requestTime: logStart,
+                                    responseTime: new Date().toISOString(),
+                                    apiEndpoint: _self.storageClient.accountName + "/" + _self.storageClient.tableName,
+                                    errorMessage: error ? error.toString() : ''
+                                });
+                            }
                         });
                     }
                     else {
@@ -218,7 +253,10 @@ var AzureBotStorage = /** @class */ (function () {
     };
     AzureBotStorage.prototype.initializeStorageClient = function () {
         var _this = this;
+        var _self = this;
         if (!this.initializeTableClientPromise) {
+            //for logging
+            var loggingStart_1 = new Date().toISOString();
             // The first call will trigger the initialization of the table client, which creates the Azure table if it
             // does not exist. Subsequent calls will not block.
             this.initializeTableClientPromise = new Promise(function (resolve, reject) {
@@ -228,6 +266,16 @@ var AzureBotStorage = /** @class */ (function () {
                     }
                     else {
                         resolve(true);
+                    }
+                    //logging functions
+                    if (_self.logFunc) {
+                        _self.logFunc({
+                            operationName: 'StateAPIInitialize',
+                            requestTime: loggingStart_1,
+                            responseTime: new Date().toISOString(),
+                            apiEndpoint: _self.storageClient.accountName + "/" + _self.storageClient.tableName,
+                            errorMessage: error ? error.toString() : ''
+                        });
                     }
                 });
             });

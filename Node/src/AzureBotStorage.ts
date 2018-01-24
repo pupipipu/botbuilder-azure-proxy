@@ -52,7 +52,7 @@ export class AzureBotStorage implements builder.IBotStorage {
     private initializeTableClientPromise: Promise<boolean>;
     private storageClientInitialized: boolean;
 
-    constructor(private options: IAzureBotStorageOptions, private storageClient?: IStorageClient) { }
+    constructor(private options: IAzureBotStorageOptions, private storageClient?: IStorageClient, private logFunc?: (logObject:any) => void) { }
 
     public client(storageClient: IStorageClient) : this {
         this.storageClient = storageClient;
@@ -62,6 +62,9 @@ export class AzureBotStorage implements builder.IBotStorage {
     /** Reads in data from storage. */
     public getData(context: builder.IBotStorageContext, callback: (err: Error, data: builder.IBotStorageData) => void): void {
         // We initialize on every call, but only block on the first call. The reason for this is that we can't run asynchronous initialization in the class ctor
+
+        let _self = this;
+
         this.initializeStorageClient().done(() => {
             // Build list of read commands
             var list: any[] = [];
@@ -96,6 +99,7 @@ export class AzureBotStorage implements builder.IBotStorage {
             var data: builder.IBotStorageData = {};
             async.each(list, (entry, cb) => {
 
+                let logStart = new Date().toISOString();
                 this.storageClient.retrieve(entry.partitionKey, entry.rowKey, function(error: any, entity: any, response: IHttpResponse){
                     if (!error) {
                         if(entity) {
@@ -133,6 +137,18 @@ export class AzureBotStorage implements builder.IBotStorage {
                     } else {
                         cb(error);
                     }
+
+                    //logging functions
+                    if(_self.logFunc){
+                      _self.logFunc({
+                        operationName:'StateAPIGetData',
+                        requestTime:logStart,
+                        responseTime:new Date().toISOString(),
+                        apiEndpoint: `${_self.storageClient.accountName}/${_self.storageClient.tableName}`,
+                        errorMessage: error ? error.toString() : ''
+                      });
+                    }
+
                 });
             }, (err) => {
                 if (!err) {
@@ -147,6 +163,8 @@ export class AzureBotStorage implements builder.IBotStorage {
 
     /** Writes out data to storage. */
     public saveData(context: builder.IBotStorageContext, data: builder.IBotStorageData, callback?: (err: Error) => void): void {
+
+        let _self = this;
 
         // We initialize on every call, but only block on the first call. The reason for this is that we can't run asynchronous initialization in the class ctor
         let promise = this.initializeStorageClient();
@@ -182,6 +200,9 @@ export class AzureBotStorage implements builder.IBotStorage {
 
                 // Execute writes in parallel
                 async.each(list, (entry, errorCallback) => {
+
+                    let logStart = new Date().toISOString();
+
                     if (this.options.gzipData) {
                         zlib.gzip(entry.hash, (err, result) => {
                             if (!err && result.length > Consts.maxDataLength) {
@@ -192,6 +213,18 @@ export class AzureBotStorage implements builder.IBotStorage {
                                 //Insert gzipped entry
                                 this.storageClient.insertOrReplace(entry.partitionKey, entry.rowKey, result.toString('base64'), true, function(error: any, eTag: any, response: IHttpResponse){
                                     errorCallback(error);
+
+                                    //logging functions
+                                    if(_self.logFunc){
+                                      _self.logFunc({
+                                        operationName:'StateAPISaveDataGZip',
+                                        requestTime:logStart,
+                                        responseTime:new Date().toISOString(),
+                                        apiEndpoint: `${_self.storageClient.accountName}/${_self.storageClient.tableName}`,
+                                        errorMessage: error ? error.toString() : ''
+                                      });
+                                    }
+
                                 });
                             } else {
                                 errorCallback(err);
@@ -200,6 +233,18 @@ export class AzureBotStorage implements builder.IBotStorage {
                     } else if (entry.hash.length < Consts.maxDataLength) {
                         this.storageClient.insertOrReplace(entry.partitionKey, entry.rowKey, entry.botData, false, function(error: any, eTag: any, response: IHttpResponse){
                             errorCallback(error);
+
+                            //logging functions
+                            if(_self.logFunc){
+                              _self.logFunc({
+                                operationName:'StateAPISaveData',
+                                requestTime:logStart,
+                                responseTime:new Date().toISOString(),
+                                apiEndpoint: `${_self.storageClient.accountName}/${_self.storageClient.tableName}`,
+                                errorMessage: error ? error.toString() : ''
+                              });
+                            }
+
                         });
                     } else {
                         var err = new Error("Data of " + entry.hash.length + " bytes exceeds the " + Consts.maxDataLength + " byte limit. Consider setting connectors gzipData option. Can't post to: " + entry.url);
@@ -227,8 +272,13 @@ export class AzureBotStorage implements builder.IBotStorage {
     }
 
     private initializeStorageClient(): Promise<boolean>{
+        let _self = this;
+
         if(!this.initializeTableClientPromise)
         {
+            //for logging
+            let loggingStart = new Date().toISOString();
+
             // The first call will trigger the initialization of the table client, which creates the Azure table if it
             // does not exist. Subsequent calls will not block.
             this.initializeTableClientPromise = new Promise<boolean>((resolve, reject) => {
@@ -238,6 +288,17 @@ export class AzureBotStorage implements builder.IBotStorage {
                     }
                     else{
                         resolve(true);
+                    }
+
+                    //logging functions
+                    if(_self.logFunc){
+                      _self.logFunc({
+                        operationName:'StateAPIInitialize',
+                        requestTime:loggingStart,
+                        responseTime:new Date().toISOString(),
+                        apiEndpoint: `${_self.storageClient.accountName}/${_self.storageClient.tableName}`,
+                        errorMessage: error ? error.toString() : ''
+                      });
                     }
                 });
             });
